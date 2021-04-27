@@ -1,0 +1,30 @@
+version: "3.9"
+services:
+  scripts:
+    build: ./scripts
+    depends_on:
+      - db
+  db:
+    image: mysql
+    cap_add:
+      - SYS_NICE
+    environment:
+      - MYSQL_DATABASE=stack
+      - MYSQL_ROOT_PASSWORD=password
+  exporter:
+    build: ./exporter
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    ports:
+      - 9090:9090
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    depends_on: 
+      - exporter
